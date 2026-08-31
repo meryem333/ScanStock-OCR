@@ -1,0 +1,23 @@
+fastapi==0.115.*
+uvicorn[standard]==0.32.*
+opencv-python-headless==4.10.*
+pydantic==2.*
+python-multipart==0.0.*
+httpx==0.27.*
+python-dotenv==1.0.*
+
+# --- OCR ---
+# NOTE (compromis technique, voir README.md section "Compromis") :
+# PaddleOCR a bien été *installé* (paddlepaddle + paddleocr s'installent
+# correctement via pip), mais il télécharge ses modèles de détection/
+# reconnaissance depuis des serveurs externes (hébergement officiel Paddle)
+# au premier lancement. Dans l'environnement où ce service a été développé,
+# ce téléchargement était bloqué par la politique réseau, ce qui rend
+# PaddleOCR inutilisable tel quel. On utilise donc Tesseract (pytesseract)
+# comme moteur OCR par défaut. Le code de ocr_engine.py garde un chemin
+# PaddleOCR prêt à l'emploi (ENGINE=paddle dans .env) pour le jour où
+# l'équipe déploiera sur une machine/CI avec accès réseau complet ou avec
+# les modèles pré-téléchargés et committés/montés en volume.
+pytesseract==0.3.*
+# paddleocr==3.7.*      # décommenter si les modèles sont accessibles
+# paddlepaddle==3.3.*   # idem
