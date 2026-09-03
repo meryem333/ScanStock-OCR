@@ -11,6 +11,10 @@ from app.core.logging import get_logger
 from app.ocr.ocr_engine import extract_text
 from app.preprocessing.image_cleaner import preprocess_image
 
+import sys
+sys.path.append(r"C:\Users\merye\Documents\ScanStock\ScanStock-OCR\product-extraction")
+from extraction_tableau import extraire_lignes_produits_tableau
+
 logger = get_logger(__name__)
 router = APIRouter(tags=["scan"])
 
@@ -35,7 +39,8 @@ async def process_image(file: UploadFile = File(...)) -> dict:
     try:
         preprocessed = preprocess_image(tmp_path)
         raw_text = extract_text(preprocessed)
-        return {"status": "success", "raw_ocr_text": raw_text}
+        produits = extraire_lignes_produits_tableau(raw_text)
+        return {"status": "success", "raw_ocr_text": raw_text, "produits": produits}
     except ValueError as exc:
         return {"status": "error", "raw_ocr_text": "", "warnings": [str(exc)]}
     except Exception as exc:
