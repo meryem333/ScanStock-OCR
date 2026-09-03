@@ -5,10 +5,8 @@ celui généré à la volée par le test lui-même.
 import cv2
 import numpy as np
 
-from app.llm.llm_client import structure_text
 from app.ocr.ocr_engine import extract_text
 from app.preprocessing.image_cleaner import preprocess_image
-from app.schemas.scan_result import ScanResult
 
 
 def _make_test_image(path: str) -> None:
@@ -22,28 +20,36 @@ def _make_test_image(path: str) -> None:
     cv2.imwrite(path, img)
 
 
-def test_preprocess_image_returns_binary_ndarray(tmp_path):
+def test_preprocess_image_returns_grayscale_ndarray(tmp_path):
     img_path = tmp_path / "test.png"
     _make_test_image(str(img_path))
 
     result = preprocess_image(str(img_path))
 
     assert isinstance(result, np.ndarray)
-    assert result.ndim == 2  # image à un seul canal après le pipeline
-    # une image binarisée ne doit contenir que 0 et 255
+    assert result.ndim == 2  # image à un seul canal (niveaux de gris) après le pipeline
+    assert result.dtype == np.uint8
+
+
+def test_preprocess_image_binarize_true_returns_binary_ndarray(tmp_path):
+    img_path = tmp_path / "test.png"
+    _make_test_image(str(img_path))
+
+    result = preprocess_image(str(img_path), binarize=True)
+
+    assert isinstance(result, np.ndarray)
+    assert result.ndim == 2
+    # avec binarize=True explicite, l'image ne doit contenir que 0 et 255
     assert set(np.unique(result)).issubset({0, 255})
 
 
-def test_extract_text_and_structure_end_to_end(tmp_path):
+def test_extract_text_end_to_end(tmp_path):
+    """Vérifie le pipeline complet de ton périmètre : image -> preprocessing -> OCR."""
     img_path = tmp_path / "test.png"
     _make_test_image(str(img_path))
 
     preprocessed = preprocess_image(str(img_path))
     raw_text = extract_text(preprocessed)
+
     assert isinstance(raw_text, str)
-
-    structured = structure_text(raw_text)
-    result = ScanResult.model_validate(structured)
-
-    assert result.status in ("success", "error")
-    assert 0.0 <= result.confidence <= 1.0
+    assert len(raw_text.strip()) > 0  # l'OCR doit avoir détecté du texte

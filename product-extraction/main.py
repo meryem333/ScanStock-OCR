@@ -24,8 +24,7 @@ historique_mouvements = []
 
 
 def main():
-    chemin_image = r"C:\Users\merye\Documents\ScanStock\ScanStock-OCR\ia-service\tests\sample_bon_livraison.png"
-
+    chemin_image = r"C:\Users\marou\Documents\sample_bon_livraison.png"
     resultat_ocr = scanner_image(chemin_image)
     produits_extraits = extraire_produits(resultat_ocr["raw_ocr_text"])
 

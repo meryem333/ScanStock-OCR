@@ -37,7 +37,13 @@ def _get_tesseract_text(image: np.ndarray) -> str:
     if settings.TESSERACT_CMD:
         pytesseract.pytesseract.tesseract_cmd = settings.TESSERACT_CMD
 
-    config = "--psm 6"  # 6 = bloc de texte uniforme, adapté à une feuille de charge
+    # --psm 6 : bloc de texte uniforme, adapté à une feuille de charge/tableau
+    # --oem 1 : force le moteur LSTM (réseau de neurones, plus précis que le
+    #           moteur historique par pattern-matching, surtout sur du texte
+    #           imprimé dense). Gain mesuré empiriquement : sensiblement plus
+    #           de valeurs numériques (quantités/prix) correctement reconnues
+    #           sur un vrai bon de livraison tabulaire.
+    config = "--psm 6 --oem 1"
     text = pytesseract.image_to_string(image, lang=settings.TESSERACT_LANG, config=config)
     return text.strip()
 
